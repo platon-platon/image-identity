@@ -4,6 +4,10 @@ This project provides utilities to detect license plates in vehicle images and
 remove or replace them with custom text or an overlay image. The main entry
 point is a command line interface that processes one or more images.
 
+The detection routine applies additional heuristics to keep only regions that
+look like number plates (based on aspect ratio and size). This reduces
+false positives such as model badges or signage.
+
 ## Requirements
 
 - Python 3.8+
