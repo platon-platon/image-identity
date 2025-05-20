@@ -74,3 +74,12 @@ def overlay_image(image, bbox: Tuple[int, int, int, int], overlay) -> None:
         bg = cv2.bitwise_and(image[:, :, c], image[:, :, c], mask=mask_inv)
         fg = cv2.bitwise_and(overlay_rgb[:, :, c], overlay_rgb[:, :, c], mask=mask)
         image[:, :, c] = cv2.add(bg, fg)
+        overlay_rgb = warped
+        mask = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)
+
+    mask_inv = cv2.bitwise_not(mask)
+    for c in range(3):
+        bg = cv2.bitwise_and(image[:, :, c], image[:, :, c], mask=mask_inv)
+        fg = cv2.bitwise_and(overlay_rgb[:, :, c], overlay_rgb[:, :, c], mask=mask)
+        image[:, :, c] = cv2.add(bg, fg)

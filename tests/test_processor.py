@@ -8,6 +8,7 @@ try:
     blur_region = processor.blur_region
     overlay_text = processor.overlay_text
     overlay_image = processor.overlay_image
+    overlay_image = processor.overlay_image
     _deps_available = True
 except Exception:  # pragma: no cover - dependencies may be missing
     np = None
