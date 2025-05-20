@@ -32,6 +32,9 @@ def recognize_text(image, bbox: Tuple[int, int, int, int]) -> str:
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     gray = cv2.bilateralFilter(gray, 11, 17, 17)
     gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    text = pytesseract.image_to_string(gray, config="--psm 7")
+    try:
+        text = pytesseract.image_to_string(gray, config="--psm 7")
+    except pytesseract.TesseractNotFoundError:  # pragma: no cover - binary missing
+        return ""
     return text.strip()
 
