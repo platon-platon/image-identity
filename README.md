@@ -40,8 +40,10 @@ as follows:
 
 ```bash
 python -m image_identity.cli \
-    --input test-data/front.jpg --input test-data/back.jpg \
-    --input test-data/front_angle.jpg --input test-data/back_angle.jpg \
+    --input "test-data/JAECOO_front.jpg" \
+    --input "test-data/JAECOO rear.jpg" \
+    --input "test-data/JAECOO front 3 quarter.jpg" \
+    --input "test-data/JAECOO rear 3 quarter.jpg" \
     --output processed_images --text "DEMO"
 ```
 
@@ -52,7 +54,7 @@ use the `--replace-with` option:
 
 ```bash
 python -m image_identity.cli \
-    --input test-data/front.jpg --output processed_images \
+    --input "test-data/JAECOO_front.jpg" --output processed_images \
     --replace-with "ANON"
 ```
 
