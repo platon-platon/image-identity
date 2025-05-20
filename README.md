@@ -31,6 +31,14 @@ python -m image_identity.cli \
 
 You can also provide an overlay image for the plate using `--overlay` instead of
 `--text`.
+To automatically recognise the existing plate text and replace it with custom text
+use the `--replace-with` option:
+
+```bash
+python -m image_identity.cli \
+    --input test-data/front.jpg --output processed_images \
+    --replace-with "ANON"
+```
 
 Processed images are written to the specified output directory with license
 plates blurred, replaced by text, or overlaid with a custom image.

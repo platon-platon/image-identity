@@ -4,9 +4,10 @@ import os
 
 from .detector import detect_license_plates
 from .processor import blur_region, overlay_text, overlay_image
+from .ocr import recognize_text
 
 
-def process_image(path: str, output_dir: str, text: str = None, overlay_path: str = None):
+def process_image(path: str, output_dir: str, text: str = None, overlay_path: str = None, replace_with: str = None):
     image = cv2.imread(path)
     if image is None:
         raise FileNotFoundError(f"Unable to read image: {path}")
@@ -19,7 +20,12 @@ def process_image(path: str, output_dir: str, text: str = None, overlay_path: st
             raise FileNotFoundError(f"Unable to read overlay: {overlay_path}")
 
     for bbox in plates:
-        if overlay_img is not None:
+        if replace_with is not None:
+            recognized = recognize_text(image, bbox)
+            if recognized:
+                print(f"Recognized plate '{recognized}' -> replacing with '{replace_with}'")
+            overlay_text(image, bbox, replace_with)
+        elif overlay_img is not None:
             overlay_image(image, bbox, overlay_img)
         elif text is not None:
             overlay_text(image, bbox, text)
@@ -39,11 +45,19 @@ def main():
     parser.add_argument('--output', '-o', required=True, help='Output directory')
     parser.add_argument('--text', help='Custom text to overlay on license plates')
     parser.add_argument('--overlay', help='Path to custom plate image overlay')
+    parser.add_argument('--replace-with', help='Text to replace recognized plate text')
     args = parser.parse_args()
 
     for img_path in args.input:
-        process_image(img_path, args.output, text=args.text, overlay_path=args.overlay)
+        process_image(
+            img_path,
+            args.output,
+            text=args.text,
+            overlay_path=args.overlay,
+            replace_with=args.replace_with,
+        )
 
 
 if __name__ == '__main__':
     main()
+
