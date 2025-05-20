@@ -15,9 +15,7 @@ except Exception:  # pragma: no cover - dependencies may be missing
     overlay_text = None
     _deps_available = False
 
-
 @unittest.skipUnless(_deps_available, "NumPy and OpenCV are required")
-main
 class TestProcessor(unittest.TestCase):
     def setUp(self):
         self.image = np.zeros((100, 200, 3), dtype=np.uint8)
