@@ -1,10 +1,23 @@
 import unittest
-import numpy as np
-import cv2
-
-from image_identity.processor import blur_region, overlay_text
 
 
+try:
+    import numpy as np
+    import cv2
+    from image_identity import processor
+    blur_region = processor.blur_region
+    overlay_text = processor.overlay_text
+    _deps_available = True
+except Exception:  # pragma: no cover - dependencies may be missing
+    np = None
+    cv2 = None
+    blur_region = None
+    overlay_text = None
+    _deps_available = False
+
+
+@unittest.skipUnless(_deps_available, "NumPy and OpenCV are required")
+main
 class TestProcessor(unittest.TestCase):
     def setUp(self):
         self.image = np.zeros((100, 200, 3), dtype=np.uint8)

@@ -18,9 +18,14 @@ pip install -r requirements.txt
 
 ## Usage
 
+
+Example images are stored in the `test-data` directory. The CLI can be invoked
+as follows:
+
 ```bash
 python -m image_identity.cli \
-    --input front.jpg --input back.jpg --input front_angle.jpg --input back_angle.jpg \
+    --input test-data/front.jpg --input test-data/back.jpg \
+    --input test-data/front_angle.jpg --input test-data/back_angle.jpg \
     --output processed_images --text "DEMO"
 ```
 
