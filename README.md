@@ -18,6 +18,7 @@ pip install -r requirements.txt
 
 ## Usage
 
+
 Example images are stored in the `test-data` directory. The CLI can be invoked
 as follows:
 
