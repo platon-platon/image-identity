@@ -7,6 +7,7 @@ try:
     from image_identity import processor
     blur_region = processor.blur_region
     overlay_text = processor.overlay_text
+    overlay_image = processor.overlay_image
     _deps_available = True
 except Exception:  # pragma: no cover - dependencies may be missing
     np = None
@@ -34,6 +35,17 @@ class TestProcessor(unittest.TestCase):
         # Expect some non-zero pixels due to text drawing
         region = img[25:75, 50:150]
         self.assertTrue(np.any(region != 0))
+
+    def test_overlay_image_rotated(self):
+        img = self.image.copy()
+        overlay = np.ones((20, 40, 3), dtype=np.uint8) * 255
+        # draw a rotated rectangle inside bbox to provide orientation cues
+        pts = np.array([[60, 40], [100, 40], [100, 60], [60, 60]], dtype="float32")
+        M = cv2.getRotationMatrix2D((80, 50), 30, 1)
+        rpts = cv2.transform(np.array([pts]), M)[0].astype(int)
+        cv2.fillConvexPoly(img, rpts, (255, 255, 255))
+        overlay_image(img, self.bbox, overlay)
+        self.assertTrue(np.any(img != 0))
 
 
 if __name__ == '__main__':

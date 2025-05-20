@@ -26,14 +26,53 @@ def overlay_text(image, bbox: Tuple[int, int, int, int], text: str) -> None:
                 font_scale, (0, 0, 0), thickness, cv2.LINE_AA)
 
 
+def _estimate_rotated_rect(roi):
+    """Return cv2.minAreaRect for the prominent contour in ``roi`` or ``None``."""
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return None
+    contour = max(contours, key=cv2.contourArea)
+    return cv2.minAreaRect(contour)
+
+
 def overlay_image(image, bbox: Tuple[int, int, int, int], overlay) -> None:
-    """Overlay another image resized to bbox."""
+    """Overlay another image respecting plate angle when possible."""
     x, y, w, h = bbox
-    overlay_resized = cv2.resize(overlay, (w, h))
-    if overlay_resized.shape[2] == 4:
-        alpha = overlay_resized[:, :, 3] / 255.0
-        for c in range(3):
-            image[y:y+h, x:x+w, c] = (1 - alpha) * image[y:y+h, x:x+w, c] + \
-                alpha * overlay_resized[:, :, c]
+    roi = image[y:y+h, x:x+w]
+    rect = _estimate_rotated_rect(roi)
+
+    if rect and rect[1][0] > 1 and rect[1][1] > 1:
+        # Convert rect centre to absolute image coordinates
+        center = (rect[0][0] + x, rect[0][1] + y)
+        size = rect[1]
+        box = cv2.boxPoints((center, size, rect[2])).astype("float32")
+        ow, oh = int(size[0]), int(size[1])
     else:
-        image[y:y+h, x:x+w] = overlay_resized
+        box = np.array(
+            [[x, y], [x + w, y], [x + w, y + h], [x, y + h]],
+            dtype="float32",
+        )
+        ow, oh = w, h
+
+    overlay_resized = cv2.resize(overlay, (ow, oh))
+    src_pts = np.array([[0, 0], [ow - 1, 0], [ow - 1, oh - 1], [0, oh - 1]], dtype="float32")
+    M = cv2.getPerspectiveTransform(src_pts, box)
+    warped = cv2.warpPerspective(
+        overlay_resized, M, (image.shape[1], image.shape[0]), borderValue=(0, 0, 0, 0)
+    )
+
+    if warped.shape[2] == 4:
+        mask = warped[:, :, 3]
+        overlay_rgb = warped[:, :, :3]
+    else:
+        overlay_rgb = warped
+        mask = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)
+
+    mask_inv = cv2.bitwise_not(mask)
+    for c in range(3):
+        bg = cv2.bitwise_and(image[:, :, c], image[:, :, c], mask=mask_inv)
+        fg = cv2.bitwise_and(overlay_rgb[:, :, c], overlay_rgb[:, :, c], mask=mask)
+        image[:, :, c] = cv2.add(bg, fg)
