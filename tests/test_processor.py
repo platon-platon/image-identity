@@ -8,6 +8,7 @@ try:
     blur_region = processor.blur_region
     overlay_text = processor.overlay_text
     overlay_image = processor.overlay_image
+    overlay_image = processor.overlay_image
     _deps_available = True
 except Exception:  # pragma: no cover - dependencies may be missing
     np = None
@@ -46,6 +47,18 @@ class TestProcessor(unittest.TestCase):
         cv2.fillConvexPoly(img, rpts, (255, 255, 255))
         overlay_image(img, self.bbox, overlay)
         self.assertTrue(np.any(img != 0))
+
+    def test_overlay_image_keeps_size(self):
+        img = self.image.copy()
+        overlay = np.ones((20, 40, 3), dtype=np.uint8) * 255
+        overlay_image(img, self.bbox, overlay)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
+        x, y, w, h = self.bbox
+        bbox_mask = np.zeros_like(mask)
+        cv2.rectangle(bbox_mask, (x, y), (x + w, y + h), 255, -1)
+        outside = cv2.bitwise_and(mask, cv2.bitwise_not(bbox_mask))
+        self.assertLess(np.sum(outside), 0.2 * w * h)
 
 
 if __name__ == '__main__':
