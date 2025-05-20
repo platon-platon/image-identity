@@ -6,9 +6,11 @@ from typing import Tuple
 def blur_region(image, bbox: Tuple[int, int, int, int]) -> None:
     """Blur a region in-place defined by bbox in the image."""
     x, y, w, h = bbox
-    roi = image[y:y+h, x:x+w]
-    blurred = cv2.GaussianBlur(roi, (51, 51), 0)
-    image[y:y+h, x:x+w] = blurred
+    # Blur the entire image to ensure edge pixels are mixed, then copy the
+    # corresponding region back. This avoids unchanged regions when the source
+    # area is a solid color.
+    blurred_full = cv2.GaussianBlur(image, (51, 51), 0)
+    image[y:y+h, x:x+w] = blurred_full[y:y+h, x:x+w]
 
 
 def overlay_text(image, bbox: Tuple[int, int, int, int], text: str) -> None:
